@@ -1,5 +1,5 @@
-#ifndef TRANSPORATION_MATRIX
-#define TRANSPORATION_MATRIX
+#ifndef TRANSPORTATION_MATRIX
+#define TRANSPORTATION_MATRIX
 
 #include <iostream>
 #include <set>
@@ -28,7 +28,7 @@ public:
   }
 };
 
-class TrasportationMatrix {
+class TransportationMatrix {
 private:
   set<int> crossedOutRows = set<int>();
   set<int> crossedOutColumns = set<int>();
@@ -41,7 +41,7 @@ public:
   vector<int> u;
   vector<int> v;
 
-  TrasportationMatrix(int height, int width) : height(height), width(width) {
+  TransportationMatrix(int height, int width) : height(height), width(width) {
     this->matrix = vector<vector<cell>>(height, vector<cell>(width, cell()));
     this->demand = vector<int>(width, 0);
     this->supply = vector<int>(height, 0);
@@ -52,7 +52,7 @@ public:
   cell &operator()(int row, int col) { return matrix[row][col]; }
   const cell &operator()(int row, int col) const { return matrix[row][col]; }
 
-  friend ostream &operator<<(ostream &out, const TrasportationMatrix &m) {
+  friend ostream &operator<<(ostream &out, const TransportationMatrix &m) {
     for (int i = 0; i < m.height; i++) {
       for (int j = 0; j < m.width; j++) {
         out << m(i, j);
@@ -64,7 +64,7 @@ public:
     return out;
   }
 
-  friend istream &operator>>(istream &in, TrasportationMatrix &m) {
+  friend istream &operator>>(istream &in, TransportationMatrix &m) {
     for (int i = 0; i < m.height; i++)
       for (int j = 0; j < m.width; j++) {
         in >> m(i, j);
@@ -83,4 +83,4 @@ public:
     this->crossedOutColumns = set<int>();
   }
 };
-#endif // !TRANSPORATION_MATRIX
+#endif // !TRANSPORTATION_MATRIX

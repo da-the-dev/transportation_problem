@@ -6,7 +6,7 @@ using namespace std;
 int main() {
   int height, width;
   cin >> height >> width;
-  TrasportationMatrix matrix = TrasportationMatrix(height, width);
+  TransportationMatrix matrix = TransportationMatrix(height, width);
 
   cin >> matrix; 
 
