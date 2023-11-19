@@ -82,5 +82,15 @@ public:
     this->crossedOutRows = set<int>();
     this->crossedOutColumns = set<int>();
   }
+
+  void enter_supply(istream &in) {
+     for (int i = 0; i < height; i++)
+      in >> supply[i];
+  }
+
+  void enter_demand(istream &in) {
+     for (int i = 0; i < width; i++)
+      in >> demand[i];
+  }
 };
 #endif // !TRANSPORTATION_MATRIX
