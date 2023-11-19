@@ -1,8 +1,14 @@
 #include <iostream>
+#include "transportation_matrix.cpp"
 
 using namespace std;
 
 int main() {
-  cout << "Hello, World!" << endl;
-  return 0;
+  int height, width;
+  cin >> height >> width;
+  TrasportationMatrix matrix = TrasportationMatrix(height, width);
+
+  cin >> matrix; 
+
+  cout << matrix;
 }
