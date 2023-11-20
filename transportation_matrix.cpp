@@ -76,8 +76,8 @@ public:
   void crossOutRow(int rowIdx) { crossedOutRows.insert(rowIdx); }
   bool isCrossedRow(int rowIdx) {return crossedOutRows.find(rowIdx) != crossedOutRows.end();}
 
-  void crossOutColumn(int rowIdx) { crossedOutRows.insert(rowIdx); }
-  bool isCrossedColumn(int rowIdx) {return crossedOutColumns.find(rowIdx) != crossedOutColumns.end();}
+  void crossOutColumn(int colIdx) { crossedOutColumns.insert(colIdx); }
+  bool isCrossedColumn(int colIdx) {return crossedOutColumns.find(colIdx) != crossedOutColumns.end();}
 
   void resetCrossings() {
     this->crossedOutRows = set<int>();
