@@ -6,5 +6,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(SOURCES main.cpp
   transportation_matrix.cpp
   bfs_generator.cpp
+  russell.cpp
   )
 add_executable(transport ${SOURCES})
