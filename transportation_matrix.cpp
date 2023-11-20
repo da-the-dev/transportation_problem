@@ -33,9 +33,6 @@ private:
   set<int> crossedOutRows = set<int>();
   set<int> crossedOutColumns = set<int>();
 
-protected:
-  int c(int i, int j) { return (*this)(i, j).cost; }
-
 public:
   int height;
   int width;
@@ -96,5 +93,7 @@ public:
      for (int i = 0; i < width; i++)
       in >> demand[i];
   }
+
+  int c(int i, int j) const { return (*this)(i, j).cost; }
 };
 #endif // !TRANSPORTATION_MATRIX
