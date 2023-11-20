@@ -32,6 +32,10 @@ class TransportationMatrix {
 private:
   set<int> crossedOutRows = set<int>();
   set<int> crossedOutColumns = set<int>();
+
+protected:
+  int c(int i, int j) { return (*this)(i, j).cost; }
+
 public:
   int height;
   int width;
