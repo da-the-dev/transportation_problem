@@ -29,9 +29,6 @@ public:
 };
 
 class TransportationMatrix {
-private:
-  set<int> crossedOutRows = set<int>();
-  set<int> crossedOutColumns = set<int>();
 
 public:
   int height;
@@ -41,6 +38,8 @@ public:
   vector<int> supply;
   vector<int> u;
   vector<int> v;
+  set<int> crossedOutRows = set<int>();
+  set<int> crossedOutColumns = set<int>();
 
   TransportationMatrix(int height, int width) : height(height), width(width) {
     this->matrix = vector<vector<cell>>(height, vector<cell>(width, cell()));
