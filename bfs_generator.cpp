@@ -4,7 +4,7 @@
 #include "transportation_matrix.cpp"
 class BFS_Generator {
 public:
-  virtual void generate_bfs(TransportationMatrix &matrix) = 0;
+  virtual void generate_bfs(TransportationMatrix matrix) = 0;
 };
 
 #endif // !BFS_GENERATOR
