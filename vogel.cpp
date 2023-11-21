@@ -1,189 +1,118 @@
+#include "bfs_generator.cpp"
+#include "transportation_matrix.cpp"
+#include <algorithm>
+#include <climits>
 #include <iostream>
-#include "matrix.h"
-
-#define SOURCES 3
-#define DEST 4
+#include <vector>
 
 using namespace std;
 
-bool isBalanced(Matrix S, Matrix D) {
-    double sumS = 0;
-    double sumD = 0;
-    for (int i = 0; i < SOURCES; i++) {
-        sumS += S.matrix[i][0];
-    }
+class Vogels : public BFS_Generator {
+public:
+  void generate_bfs(TransportationMatrix m) {
+    vector<int> &u = m.u;
+    vector<int> &v = m.v;
+    vector<int> &supply = m.supply;
+    vector<int> &demand = m.demand;
 
-    for (int i = 0; i < DEST; i++) {
-        sumD += D.matrix[i][0];
-    }
+    // Repeat until only one untouched cell remains
+    do {
+      // Find penalties for rows
+      for (int row = 0; row < m.height; row++) {
+        if (m.isCrossedRow(row))
+          continue;
+        vector<int> rowCosts;
+        for (int col = 0; col < m.width; col++)
+          if (!m.isCrossedColumn(col))
+            rowCosts.push_back(m.c(row, col));
+        sort(rowCosts.begin(), rowCosts.end());
 
-    if (sumD != sumS) {
-        cout << "The problem is not balanced!";
-        return false;
-    }
+        u[row] = rowCosts[1] - rowCosts[0];
+      }
 
-    return true;
-}
+      // Find penalties for columns
+      for (int col = 0; col < m.width; col++) {
+        if (m.isCrossedColumn(col))
+          continue;
+        vector<int> colCosts;
+        for (int row = 0; row < m.height; row++)
+          if (!m.isCrossedRow(row))
+            colCosts.push_back(m.c(row, col));
+        sort(colCosts.begin(), colCosts.end());
 
-Matrix createTable (Matrix S, Matrix C, Matrix D) {
-    Matrix A(SOURCES + 1, DEST + 1);
-    for (int i = 0; i < SOURCES; i++) {
-        for (int j = 0; j < DEST; j++) {
-            A.matrix[i][j] = C.matrix[i][j];
+        v[col] = colCosts[1] - colCosts[0];
+      }
+
+      // Find max row penalty and its index gg
+      auto uMax = max_element(u.begin(), u.end());
+      int maxRowPenalty = *uMax;
+      int maxRowPenaltyIdx = uMax - u.begin();
+
+      // Find max col penalty and its index
+      auto vMax = max_element(v.begin(), v.end());
+      int maxColPenalty = *vMax;
+      int maxColPenaltyIdx = vMax - v.begin();
+
+      // Find the largest penalty
+      if (maxRowPenalty >= maxColPenalty) {
+        // Find the smallest cost within row maxRowPenaltyIdx
+        int smallestCost = INT_MAX;
+        int col = 0;
+        for (; col < m.width; col++)
+          smallestCost = m.c(maxRowPenaltyIdx, col) < smallestCost
+                             ? m.c(maxRowPenaltyIdx, col)
+                             : smallestCost;
+
+        // Find the largest - supply or demand
+        col -= 1;
+        int maxAllocation = min(supply[maxRowPenaltyIdx], demand[col]);
+        // Deallocate supply, fill demand, and update allocation
+        supply[maxRowPenaltyIdx] -= maxAllocation;
+        demand[col] -= maxAllocation;
+        m(maxRowPenaltyIdx, col).allocated = maxAllocation;
+
+        // Crossout spent row or column
+        if (demand[col] == 0) {
+          v[col] = -INT_MAX;
+          m.crossOutColumn(col);
         }
-        A.matrix[i][DEST] = S.matrix[i][0];
+        else {
+          u[maxRowPenaltyIdx] = -INT_MAX;
+          m.crossOutRow(maxRowPenaltyIdx);
+        }
+      } else {
+        int smallestCost = INT_MAX;
+        int row = 0;
+        for (; row < m.height; row++)
+          smallestCost = m.c(row, maxColPenaltyIdx) < smallestCost
+                             ? m.c(row, maxColPenaltyIdx)
+                             : smallestCost;
+
+        // Find the largest - supply or demand
+        row -= 1;
+        int maxAllocation = min(supply[row], demand[maxColPenaltyIdx]);
+        // Deallocate supply, fill demand, and update allocation
+        supply[row] -= maxAllocation;
+        demand[maxColPenaltyIdx] -= maxAllocation;
+        m(row, maxColPenaltyIdx).allocated = maxAllocation;
+
+        // Crossout spent row or column
+        if (supply[row] == 0) {
+          u[row] = -INT_MAX;
+          m.crossOutRow(row);
+        }
+        else {
+          v[maxColPenaltyIdx] = -INT_MAX;
+          m.crossOutColumn(maxColPenaltyIdx);
+        }
+      }
+    } while (m.crossedOutColumns.size() - 1 != m.width &&
+             m.crossedOutRows.size() - 1 != m.height);
+
+    for (int i = 0; i < m.height; i++) {
+      for (int j = 0; j < m.width; j++) {
+        cout << "x" << i + 1 << j + 1 << ": " << m(i, j).allocated << endl;
+      }
     }
-    for (int j = 0; j < DEST; j++) {
-        A.matrix[SOURCES][j] = D.matrix[j][0];
-    }
-
-    return A;
-}
-
-pair<double, int> max_element_in_array (double arr[], int n) {
-    double maxx = -1;
-    int ind = -1;
-    for (int i = 0; i < n; i++) {
-        if (arr[i] > maxx && arr[i] != INT_MAX) {
-            maxx = arr[i];
-            ind = i;
-        }
-    }
-    return pair<double, int>(maxx, ind);
-}
-
-pair<double, int> getByRows(Matrix A) {
-    double rowDiff[SOURCES];
-    double min1 = INT_MAX;
-    double min2 = INT_MAX;
-    int ind;
-    for (int i = 0; i < SOURCES; i++) {
-        for(int j = 0; j < DEST; j++) {
-            if (A.matrix[i][j] < min1 && A.matrix[i][j] != -1) {
-                min1 = A.matrix[i][j];
-                ind = j;
-            }
-        }
-        for(int j = 0; j < DEST; j++) {
-            if (A.matrix[i][j] < min2 && j != ind && A.matrix[i][j] != -1) {
-                min2 = A.matrix[i][j];
-            }
-        }
-        if (min1 != INT_MAX && min2 != INT_MAX) {
-            rowDiff[i] = min2 - min1;
-        } else {
-            rowDiff[i] = INT_MAX;
-        }
-        min1 = INT_MAX;
-        min2 = INT_MAX;
-    }
-    return max_element_in_array(rowDiff, SOURCES);
-}
-
-pair<double, int> getByCols(Matrix A) {
-    double colDiff[DEST];
-    double min1 = INT_MAX;
-    double min2 = INT_MAX;
-    int ind;
-    for (int j = 0; j < DEST; j++) {
-        for (int i = 0; i < SOURCES; i++) {
-            if (A.matrix[i][j] < min1 && A.matrix[i][j] != -1) {
-                min1 = A.matrix[i][j];
-                ind = i;
-            }
-        }
-        for (int i = 0; i < SOURCES; i++) {
-            if (A.matrix[i][j] < min2 && i != ind && A.matrix[i][j] != -1) {
-                min2 = A.matrix[i][j];
-            }
-        }
-        if (min1 != INT_MAX && min2 != INT_MAX) {
-            colDiff[j] = min2 - min1;
-        } else {
-            colDiff[j] = INT_MAX;
-        }
-
-        min1 = INT_MAX;
-        min2 = INT_MAX;
-    }
-    return max_element_in_array(colDiff, DEST);
-}
-
-
-
-void vogel_approximation(Matrix S, Matrix C, Matrix D) {
-    if (!(isBalanced(S, D))) {
-        return;
-    }
-    Matrix A = createTable(S, C, D);
-    cout << "Input parameter table:" << endl;
-    cout << A;
-
-    double answer = 0;
-    while (true) {
-        pair<double, int> maxRowPenalty = getByRows(A);
-        pair<double, int> maxColPenalty = getByCols(A);
-
-        if (maxRowPenalty.first == -1 && maxColPenalty.first == -1) {
-            break;
-        }
-
-        if (maxRowPenalty.first >= maxColPenalty.first) {
-            int row = maxRowPenalty.second;
-            int minColIndex = -1;
-            double minVal = INT_MAX;
-
-            for (int j = 0; j < DEST; j++) {
-                if (A.matrix[row][j] < minVal && A.matrix[row][j] != -1) {
-                    minVal = A.matrix[row][j];
-                    minColIndex = j;
-                }
-            }
-
-            if (minColIndex != -1) {
-                double units = min(S.matrix[row][0], D.matrix[minColIndex][0]);
-                answer += units * A.matrix[row][minColIndex];
-                S.matrix[row][0] -= units;
-                D.matrix[minColIndex][0] -= units;
-                A.matrix[row][minColIndex] = -1;
-            }
-        } else {
-            int col = maxColPenalty.second;
-            int minRowIndex = -1;
-            double minVal = INT_MAX;
-
-            for (int i = 0; i < SOURCES; i++) {
-                if (A.matrix[i][col] < minVal && A.matrix[i][col] != -1) {
-                    minVal = A.matrix[i][col];
-                    minRowIndex = i;
-                }
-            }
-
-            if (minRowIndex != -1) {
-                double units = min(S.matrix[minRowIndex][0], D.matrix[col][0]);
-                answer += units * A.matrix[minRowIndex][col];
-                S.matrix[minRowIndex][0] -= units;
-                D.matrix[col][0] -= units;
-                A.matrix[minRowIndex][col] = -1;
-            }
-        }
-    }
-
-    cout << "Answer: " << answer << endl;
-}
-
-int main() {
-    Matrix S(SOURCES, 1);
-    cin >> S;
-
-    Matrix C(SOURCES, DEST);
-    cin >> C;
-
-    Matrix D(DEST, 1);
-    cin >> D;
-
-    vogel_approximation(S, C, D);
-
-    
-    return 0;
-}
+  }
+};
