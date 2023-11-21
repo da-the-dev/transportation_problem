@@ -86,6 +86,8 @@ public:
   void crossOutColumn(int colIdx) { crossedOutColumns.insert(colIdx); }
   bool isCrossedColumn(int colIdx) {return crossedOutColumns.find(colIdx) != crossedOutColumns.end();}
 
+  bool isCrossedOutCell(int i, int j) {return isCrossedRow(i) || isCrossedColumn(j);}
+
   void resetCrossings() {
     this->crossedOutRows = set<int>();
     this->crossedOutColumns = set<int>();
