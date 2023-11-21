@@ -29,6 +29,9 @@ public:
 };
 
 class TransportationMatrix {
+private:
+  vector<int> cleanDemand;
+  vector<int> cleanSupply;
 
 public:
   int height;
@@ -45,6 +48,8 @@ public:
     this->matrix = vector<vector<cell>>(height, vector<cell>(width, cell()));
     this->demand = vector<int>(width, 0);
     this->supply = vector<int>(height, 0);
+    this->cleanDemand = vector<int>(width, 0);
+    this->cleanSupply = vector<int>(height, 0);
     this->v = vector<int>(width, 0);
     this->u = vector<int>(height, 0);
   }
@@ -59,8 +64,11 @@ public:
         if (j != m.width - 1)
           out << " ";
       }
-      out << endl;
+      out << " | " << m.cleanSupply[i] << endl;
     }
+    for (int i = 0; i < m.width; i++)
+      out << m.cleanDemand[i] << " ";
+    cout << endl;
     return out;
   }
 
@@ -86,11 +94,13 @@ public:
   void enter_supply(istream &in) {
      for (int i = 0; i < height; i++)
       in >> supply[i];
+    cleanSupply = supply;
   }
 
   void enter_demand(istream &in) {
      for (int i = 0; i < width; i++)
       in >> demand[i];
+    cleanDemand = demand;
   }
 
   int c(int i, int j) const { return (*this)(i, j).cost; }
