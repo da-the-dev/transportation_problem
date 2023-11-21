@@ -7,5 +7,6 @@ set(SOURCES main.cpp
   transportation_matrix.cpp
   bfs_generator.cpp
   northwest.cpp
+  russell.cpp
   )
 add_executable(transport ${SOURCES})

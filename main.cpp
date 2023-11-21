@@ -1,6 +1,7 @@
 #include <iostream>
 #include "transportation_matrix.cpp"
 #include "northwest.cpp"
+#include "russell.cpp"
 
 using namespace std;
 
@@ -15,4 +16,7 @@ int main() {
 
   Northwest northwest = Northwest();
   northwest.generate_bfs(matrix);
+
+  Russell russell = Russell();
+  russell.generate_bfs(matrix);
 }
