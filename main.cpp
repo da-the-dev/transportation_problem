@@ -2,6 +2,7 @@
 #include "transportation_matrix.cpp"
 #include "northwest.cpp"
 #include "russell.cpp"
+#include "vogel.cpp"
 
 using namespace std;
 
@@ -19,4 +20,7 @@ int main() {
 
   Russell russell = Russell();
   russell.generate_bfs(matrix);
+
+  Vogels vogel = Vogels();
+  vogel.generate_bfs(matrix);
 }
