@@ -44,72 +44,87 @@ public:
       }
 
       // Find max row penalty and its index gg
-      auto uMax = max_element(u.begin(), u.end());
-      int maxRowPenalty = *uMax;
-      int maxRowPenaltyIdx = uMax - u.begin();
+      int maxRowPenalty = -1, maxRowPenaltyIdx = -1;
+      for (int row = 0; row < m.height; row++)
+        if (!m.isCrossedRow(row))
+          if (u[row] > maxRowPenalty) {
+            maxRowPenalty = u[row];
+            maxRowPenaltyIdx = row;
+          }
 
       // Find max col penalty and its index
-      auto vMax = max_element(v.begin(), v.end());
-      int maxColPenalty = *vMax;
-      int maxColPenaltyIdx = vMax - v.begin();
+      int maxColPenalty = -1, maxColPenaltyIdx = -1;
+      for (int col = 0; col < m.width; col++)
+        if (!m.isCrossedColumn(col))
+          if (v[col] > maxColPenalty) {
+            maxColPenalty = v[col];
+            maxColPenaltyIdx = col;
+          }
 
       // Find the largest penalty
       if (maxRowPenalty >= maxColPenalty) {
         // Find the smallest cost within row maxRowPenaltyIdx
         int smallestCost = INT_MAX;
-        int col = 0;
-        for (; col < m.width; col++)
-          smallestCost = m.c(maxRowPenaltyIdx, col) < smallestCost
-                             ? m.c(maxRowPenaltyIdx, col)
-                             : smallestCost;
-
+        int smallestCostCol = -1;
+        for (int col = 0; col < m.width; col++)
+          if (!m.isCrossedColumn(col)) {
+            if (m.c(maxRowPenaltyIdx, col) < smallestCost) {
+              smallestCost = m.c(maxRowPenaltyIdx, col);
+              smallestCostCol = col;
+            }
+          }
         // Find the largest - supply or demand
-        col -= 1;
-        int maxAllocation = min(supply[maxRowPenaltyIdx], demand[col]);
+        int maxAllocation =
+            min(supply[maxRowPenaltyIdx], demand[smallestCostCol]);
         // Deallocate supply, fill demand, and update allocation
         supply[maxRowPenaltyIdx] -= maxAllocation;
-        demand[col] -= maxAllocation;
-        m(maxRowPenaltyIdx, col).allocated = maxAllocation;
+        demand[smallestCostCol] -= maxAllocation;
+        m(maxRowPenaltyIdx, smallestCostCol).allocated = maxAllocation;
 
         // Crossout spent row or column
-        if (demand[col] == 0) {
-          v[col] = -INT_MAX;
-          m.crossOutColumn(col);
-        }
-        else {
+        if (demand[smallestCostCol] == 0) {
+          v[smallestCostCol] = -INT_MAX;
+          m.crossOutColumn(smallestCostCol);
+        } else {
           u[maxRowPenaltyIdx] = -INT_MAX;
           m.crossOutRow(maxRowPenaltyIdx);
         }
       } else {
         int smallestCost = INT_MAX;
-        int row = 0;
-        for (; row < m.height; row++)
-          smallestCost = m.c(row, maxColPenaltyIdx) < smallestCost
-                             ? m.c(row, maxColPenaltyIdx)
-                             : smallestCost;
+        int smallestCostRow = -1;
+        for (int row = 0; row < m.height; row++)
+          if (!m.isCrossedRow(row)) {
+            if (m.c(row, maxColPenaltyIdx) < smallestCost) {
+              smallestCost = m.c(row, maxColPenaltyIdx);
+              smallestCostRow = row;
+            }
+          }
 
         // Find the largest - supply or demand
-        row -= 1;
-        int maxAllocation = min(supply[row], demand[maxColPenaltyIdx]);
+        int maxAllocation =
+            min(supply[smallestCostRow], demand[maxColPenaltyIdx]);
         // Deallocate supply, fill demand, and update allocation
-        supply[row] -= maxAllocation;
+        supply[smallestCostRow] -= maxAllocation;
         demand[maxColPenaltyIdx] -= maxAllocation;
-        m(row, maxColPenaltyIdx).allocated = maxAllocation;
+        m(smallestCostRow, maxColPenaltyIdx).allocated = maxAllocation;
 
         // Crossout spent row or column
-        if (supply[row] == 0) {
-          u[row] = -INT_MAX;
-          m.crossOutRow(row);
-        }
-        else {
+        if (supply[smallestCostRow] == 0) {
+          u[smallestCostRow] = -INT_MAX;
+           m.crossOutRow(smallestCostRow);
+        } else {
           v[maxColPenaltyIdx] = -INT_MAX;
           m.crossOutColumn(maxColPenaltyIdx);
         }
       }
-    } while (m.crossedOutColumns.size() - 1 != m.width &&
-             m.crossedOutRows.size() - 1 != m.height);
+    // } while (m.crossedOutColumns.size() != m.width - 1 ||
+    //          m.crossedOutRows.size() != m.height - 1);
+    } while (m.crossedOutColumns.size() - 1 >= m.width ||
+             m.crossedOutRows.size() - 1 >= m.height);
 
-    for (int i = 0; i < m.height; i++) {
+    cout << m << endl;
+    for (int i = 0; i < m.height; i++)
+    {
       for (int j = 0; j < m.width; j++) {
         cout << "x" << i + 1 << j + 1 << ": " << m(i, j).allocated << endl;
       }
